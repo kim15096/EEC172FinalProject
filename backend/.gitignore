@@ -1,0 +1,6 @@
+node_modules
+.env
+certificate.pem.crt
+private.pem.key
+rootCA.pem
+.DS_Store
