@@ -27,7 +27,10 @@ export default {
         // });
 
         // PROD MODE
-        const response = await axios.get(import.meta.env.VITE_SERVER_URL + '/viewer', {
+        const viewer_url = import.meta.env.VITE_SERVER_URL + '/viewer'
+        console.log(viewer_url)
+
+        const response = await axios.get(viewer_url, {
           params: {
             ChannelARN: import.meta.env.VITE_AWS_SIGNAL_ARN,
             ClientId: 'device-test',
