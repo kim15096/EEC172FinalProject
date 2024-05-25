@@ -18,7 +18,16 @@ export default {
   methods: {
     async setupViewer() {
       try {
-        const response = await axios.get('http://localhost:3000/viewer', {
+        // DEV MODE
+        // const response = await axios.get('http://localhost:3000/viewer', {
+        //   params: {
+        //     ChannelARN: import.meta.env.VITE_AWS_SIGNAL_ARN,
+        //     ClientId: 'device-test',
+        //   },
+        // });
+
+        // PROD MODE
+        const response = await axios.get(import.meta.env.VITE_SERVER_URL + '/viewer', {
           params: {
             ChannelARN: import.meta.env.VITE_AWS_SIGNAL_ARN,
             ClientId: 'device-test',
