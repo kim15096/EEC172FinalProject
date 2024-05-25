@@ -9,8 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "amazon-kinesis-video-streams-webrtc": "^2.2.1",
     "aws-iot-device-sdk": "^2.2.13",
-    "aws-sdk": "^2.1626.0",
+    "aws-sdk": "^2.1627.0",
     "body-parser": "^1.20.2",
     "browserify-fs": "^1.0.0",
     "cors": "^2.8.5",

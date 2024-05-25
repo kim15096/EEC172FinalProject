@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const awsIot = require('aws-iot-device-sdk');
 const app = express();
 const AWS = require('aws-sdk');
+const { SignalingClient, Role } = require('amazon-kinesis-video-streams-webrtc');
 const path = require('path');
 var cors = require('cors')
 require('dotenv').config();
@@ -16,13 +17,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // SETUP AWS KINESIS FOR VIDEO STREAM
 AWS.config.update({
-    region: 'us-east-1',
+    region: process.env.AWS_REGION,
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECRET_KEY,
 });
 
-const kinesisVideo = new AWS.KinesisVideo();
-const kinesisVideoArchivedMedia = new AWS.KinesisVideoArchivedMedia();
+const kinesisVideoClient = new AWS.KinesisVideo({
+    region: process.env.AWS_REGION,
+    correctClockSkew: true,
+});
 
 // SETUP DEVICE SHADOW CONNECTION
 const thingShadows = awsIot.thingShadow({
@@ -30,13 +33,13 @@ const thingShadows = awsIot.thingShadow({
     // certPath: 'certificate.pem.crt',
     // caPath: 'rootCA.pem',
     clientId: 'device-test',
-    host: 'a2hn94z4q1ycvj-ats.iot.us-east-1.amazonaws.com',
-    protocol: 'wss', // Ensure secure protocol
-    reconnectPeriod: 1000, // Set a reconnect period if connection drops
-    keepalive: 10, // Set keepalive interval
+    host: process.env.AWS_HOST_NAME,
+    protocol: 'wss',
+    reconnectPeriod: 1000,
+    keepalive: 10,
     secretKey: process.env.AWS_SECRET_KEY,
     accessKeyId: process.env.AWS_ACCESS_KEY,
-    region: 'us-east-1',
+    region: process.env.AWS_REGION,
 });
 
 let clientTokenGet;
@@ -107,37 +110,62 @@ app.post('/updateShadowState', (req, res) => {
     }
 });
 
-// GET STREAM URL
-app.get('/get-stream-url', async (req, res) => {
+app.get('/viewer', async (req, res) => {
     try {
-        const streamName = 'video_stream';
-        const describeStreamResponse = await kinesisVideo.describeStream({ StreamName: streamName }).promise();
-        const streamARN = describeStreamResponse.StreamInfo.StreamARN;
+        const { ChannelARN, ClientId } = req.query;
 
-        console.log(streamARN)
+        // Get signaling channel endpoints
+        const getSignalingChannelEndpointResponse = await kinesisVideoClient
+            .getSignalingChannelEndpoint({
+                ChannelARN,
+                SingleMasterChannelEndpointConfiguration: {
+                    Protocols: ['WSS', 'HTTPS'],
+                    Role: Role.VIEWER,
+                },
+            })
+            .promise();
 
-        const getDataEndpointResponse = await kinesisVideo.getDataEndpoint({
-            StreamARN: streamARN,
-            APIName: 'GET_HLS_STREAMING_SESSION_URL'
-        }).promise();
+        const endpointsByProtocol = getSignalingChannelEndpointResponse.ResourceEndpointList.reduce((endpoints, endpoint) => {
+            endpoints[endpoint.Protocol] = endpoint.ResourceEndpoint;
+            return endpoints;
+        }, {});
 
-        const endpoint = getDataEndpointResponse.DataEndpoint;
+        const kinesisVideoSignalingChannelsClient = new AWS.KinesisVideoSignalingChannels({
+            region: process.env.AWS_REGION,
+            endpoint: endpointsByProtocol.HTTPS,
+            correctClockSkew: true,
+        });
 
-        kinesisVideoArchivedMedia.endpoint = new AWS.Endpoint(endpoint);
+        const getIceServerConfigResponse = await kinesisVideoSignalingChannelsClient
+            .getIceServerConfig({ ChannelARN })
+            .promise();
 
-        const hlsStreamResponse = await kinesisVideoArchivedMedia.getHLSStreamingSessionURL({
-            StreamName: streamName,
-            PlaybackMode: 'LIVE'
-        }).promise();
+        const iceServers = [
+            { urls: `stun:stun.kinesisvideo.${process.env.AWS_REGION}.amazonaws.com:443` },
+            ...getIceServerConfigResponse.IceServerList.map(iceServer => ({
+                urls: iceServer.Uris,
+                username: iceServer.Username,
+                credential: iceServer.Password,
+            })),
+        ];
 
-        res.json({ url: hlsStreamResponse.HLSStreamingSessionURL });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error getting stream URL');
+        res.json({
+            channelARN: ChannelARN,
+            channelEndpoint: endpointsByProtocol.WSS,
+            clientId: ClientId,
+            region: process.env.AWS_REGION,
+            iceServers,
+            accessKeyId: process.env.AWS_ACCESS_KEY,
+            secretAccessKey: process.env.AWS_SECRET_KEY,
+            systemClockOffset: kinesisVideoClient.config.systemClockOffset,
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
 // START SERVER ON PORT 3000
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${port}`);
 });

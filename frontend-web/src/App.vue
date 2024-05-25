@@ -3,9 +3,16 @@ import VideoPlayer from './components/VideoPlayer.vue'
 </script>
 
 <template>
-  <div>
+  <div class="main d-flex flex-column">
+    <h2 class="fw-bold">LazerCat</h2>
+    <VideoPlayer />
   </div>
-  <VideoPlayer />
 </template>
 
-<style scoped></style>
+<style scoped>
+.main {
+  height: 100vh;
+  width: 100vw;
+  padding: 2rem;
+}
+</style>
