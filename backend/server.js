@@ -29,15 +29,10 @@ const kinesisVideoClient = new AWS.KinesisVideo({
 });
 
 // SETUP DEVICE SHADOW CONNECTION
-const thingShadows = awsIot.thingShadow({
-    // keyPath: 'private.pem.key',
-    // certPath: 'certificate.pem.crt',
-    // caPath: 'rootCA.pem',
+const thingShadows = awsIot.device({
     clientId: 'device-test',
     host: process.env.AWS_HOST_NAME,
     protocol: 'wss',
-    reconnectPeriod: 1000,
-    keepalive: 10,
     secretKey: process.env.AWS_SECRET_KEY,
     accessKeyId: process.env.AWS_ACCESS_KEY,
     region: process.env.AWS_REGION,
@@ -50,18 +45,28 @@ let clientTokenUpdate;
 thingShadows.on('connect', function () {
     console.log("Connected to AWS IoT");
 
-    // Register the thing name
-    thingShadows.register('andrew_cc3200', {}, function () {
-        console.log("Registered andrew_cc3200");
-    });
+    thingShadows.subscribe('$aws/things/andrew_cc3200/shadow/update/accepted');
+    thingShadows.subscribe('$aws/things/andrew_cc3200/shadow/update/rejected');
+    thingShadows.subscribe('$aws/things/andrew_cc3200/shadow/update/delta');
 });
 
 thingShadows.on('status', function (thingName, stat, clientToken, stateObject) {
+    console.log(`Received ${stat} on ${thingName}: ${JSON.stringify(stateObject, null, 2)}`);
+
     if (clientToken === clientTokenGet) {
         console.log(`Received ${stat} on ${thingName}: ${JSON.stringify(stateObject, null, 2)}`);
         stateObjectStore = stateObject;
     } else if (clientToken === clientTokenUpdate) {
         console.log(`Update ${stat} on ${thingName}: ${JSON.stringify(stateObject, null, 2)}`);
+    }
+});
+
+thingShadows.on('message', function (topic, payload) {
+    console.log(`Received message on topic ${topic}: ${payload.toString()}`);
+
+    if (topic === '$aws/things/andrew_cc3200/shadow/update/accepted') {
+        const delta = JSON.parse(payload.toString());
+        console.log(delta)
     }
 });
 
