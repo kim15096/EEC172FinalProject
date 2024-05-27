@@ -11,6 +11,7 @@ require('dotenv').config();
 
 const port = 3000;
 
+//comment
 app.use(cors())
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
