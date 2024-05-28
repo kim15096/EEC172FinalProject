@@ -9,10 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@rollup/plugin-inject": "^5.0.5",
     "amazon-kinesis-video-streams-webrtc": "^2.2.1",
+    "aws-iot-device-sdk": "^2.2.13",
+    "aws-iot-device-sdk-v2": "^1.19.5",
     "aws-sdk": "^2.1627.0",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
+    "buffer": "npm:Buffer@^0.0.0",
+    "Buffer": "^0.0.0",
     "primeicons": "^7.0.0",
     "primevue": "^4.0.0-beta.3",
     "vue": "^3.4.21"

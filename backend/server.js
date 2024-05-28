@@ -1,4 +1,3 @@
-// SERVER SETUP
 const express = require('express');
 const bodyParser = require('body-parser');
 const awsIot = require('aws-iot-device-sdk');
@@ -6,15 +5,28 @@ const app = express();
 const AWS = require('aws-sdk');
 const { SignalingClient, Role } = require('amazon-kinesis-video-streams-webrtc');
 const path = require('path');
-var cors = require('cors')
+const cors = require('cors');
+const http = require('http');
+const WebSocket = require('ws');
 require('dotenv').config();
 
 const port = 3000;
 
-//comment
-app.use(cors())
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+// Broadcast function to send data to socket clients
+function broadcast(data) {
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+        }
+    });
+}
 
 // SETUP AWS KINESIS FOR VIDEO STREAM
 AWS.config.update({
@@ -28,8 +40,8 @@ const kinesisVideoClient = new AWS.KinesisVideo({
     correctClockSkew: true,
 });
 
-// SETUP DEVICE SHADOW CONNECTION
-const thingShadows = awsIot.device({
+// SETUP CONNECTIONS
+const aws_device = awsIot.device({
     clientId: 'device-test',
     host: process.env.AWS_HOST_NAME,
     protocol: 'wss',
@@ -42,80 +54,62 @@ let clientTokenGet;
 let stateObjectStore = null;
 let clientTokenUpdate;
 
-thingShadows.on('connect', function () {
-    console.log("Connected to AWS IoT");
+aws_device.on('connect', function () {
+    console.log("Device connected to AWS IoT");
 
-    thingShadows.subscribe('$aws/things/andrew_cc3200/shadow/update/accepted');
-    thingShadows.subscribe('$aws/things/andrew_cc3200/shadow/update/rejected');
-    thingShadows.subscribe('$aws/things/andrew_cc3200/shadow/update/delta');
+    aws_device.subscribe('$aws/things/andrew_cc3200/shadow/update/accepted');
+    aws_device.subscribe('$aws/things/andrew_cc3200/shadow/update/rejected');
+    aws_device.subscribe('$aws/things/andrew_cc3200/shadow/update/delta');
 });
 
-thingShadows.on('status', function (thingName, stat, clientToken, stateObject) {
+aws_device.on('status', function (thingName, stat, clientToken, stateObject) {
     console.log(`Received ${stat} on ${thingName}: ${JSON.stringify(stateObject, null, 2)}`);
 
     if (clientToken === clientTokenGet) {
-        console.log(`Received ${stat} on ${thingName}: ${JSON.stringify(stateObject, null, 2)}`);
         stateObjectStore = stateObject;
     } else if (clientToken === clientTokenUpdate) {
-        console.log(`Update ${stat} on ${thingName}: ${JSON.stringify(stateObject, null, 2)}`);
+        broadcast({ type: 'update', data: stateObject });
     }
 });
 
-thingShadows.on('message', function (topic, payload) {
+aws_device.on('message', function (topic, payload) {
     console.log(`Received message on topic ${topic}: ${payload.toString()}`);
 
     if (topic === '$aws/things/andrew_cc3200/shadow/update/accepted') {
         const delta = JSON.parse(payload.toString());
-        console.log(delta)
+        console.log(delta);
+        broadcast({ type: 'delta', data: delta });
     }
 });
 
-thingShadows.on('error', function (error) {
+aws_device.on('error', function (error) {
     console.log('Error:', error);
 });
 
-thingShadows.on('timeout', function (thingName, clientToken) {
+aws_device.on('timeout', function (thingName, clientToken) {
     console.log(`Timeout on ${thingName} with token: ${clientToken}`);
 });
 
 // GET SHADOW STATE
 app.get('/getShadowState', (req, res) => {
-    clientTokenGet = thingShadows.get('andrew_cc3200');
-    console.log(`Client Token: ${clientTokenGet}`);
-
-    if (clientTokenGet === null) {
-        console.log('Shadow get request failed');
-        res.status(500).send('Shadow get request failed');
-    } else {
-        setTimeout(() => {
-            if (stateObjectStore) {
-                res.json(stateObjectStore);
-            } else {
-                res.status(500).send('Failed to retrieve the state object');
-            }
-        }, 2000);
-    }
+    aws_device.publish('$aws/things/andrew_cc3200/shadow/update', JSON.stringify(req));
 });
 
 // UPDATE SHADOW STATE
 app.post('/updateShadowState', (req, res) => {
-    const newState = req.body;
+    const state = req.body;
 
-    if (!newState.state) {
-        res.status(400).send('Invalid request: "state" field is required in the body');
-        return;
-    }
-
-    clientTokenUpdate = thingShadows.update('andrew_cc3200', newState);
-
-    if (clientTokenUpdate === null) {
-        console.log('Shadow update request failed');
-        res.status(500).send('Shadow update request failed');
-    } else {
-        res.send(`Shadow update request sent with token: ${clientTokenUpdate}`);
-    }
+    aws_device.publish('$aws/things/andrew_cc3200/shadow/update', JSON.stringify(state), (err) => {
+        if (err) {
+            console.error('Error updating shadow state:', err);
+            res.status(500).json({ message: 'Error updating shadow state', error: err });
+        } else {
+            res.json({ message: 'Update Successful!' });
+        }
+    });
 });
 
+// Get streaming info
 app.get('/viewer', async (req, res) => {
     try {
         const { ChannelARN, ClientId } = req.query;
@@ -172,6 +166,6 @@ app.get('/viewer', async (req, res) => {
 });
 
 // START SERVER ON PORT 3000
-app.listen(port, '0.0.0.0', () => {
+server.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${port}`);
 });

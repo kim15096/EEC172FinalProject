@@ -1,21 +1,125 @@
 <!-- src/components/Viewer.vue -->
 <template>
-  <div class="d-flex flex-column align-items-center p-3">
-    <video class="video-player" ref="remoteView" autoplay playsinline controls></video>
+  <div class="d-flex flex-column main-vid align-items-left">
+    <div class="d-flex justify-content-between justify-content-center align-items-center align-text-center">
+      <div>
+        <Button @click="powerButton()" icon="pi pi-power-off" :severity='powerBtnSeverity' rounded
+          aria-label="Filter" />
+        <text class="ms-2 fw-bold" style="font-size: 16px;">{{ powerState }}</text>
+      </div>
+      <div class="mt-2">
+        <text style="font-size: 14px; font-weight: 500;">{{ status }}</text>
+      </div>
+    </div>
+
+    <video class="video-player mt-3" ref="remoteView" autoplay playsinline controls></video>
+
+    <!-- Selection -->
+    <Card class="mt-3">
+      <template #content>
+        <text style="font-size: 18px;" class="fw-bold">Select Mode</text>
+        <div class="d-flex justify-content-center mt-3 mb-3">
+          <Button size="small" severity="info" label="1. Circle"></Button>
+          <Button size="small" severity="warn" class="ms-4 me-4" label="2. ZigZag"></Button>
+          <Button size="small" severity="help" label="3. Fast"></Button>
+        </div>
+        <small style="color: gray;">*To control manually, use the remote controller</small>
+      </template>
+    </Card>
+    <!-- Preset running -->
+    <Card class="mt-3">
+      <template #content>
+        <text style="font-size: 18px;" class="fw-bold">Running: Circle</text>
+        <ProgressBar class="mt-3 ms-4 me-4" mode="indeterminate" style="height: 6px"></ProgressBar>
+        <div class="d-flex justify-content-center mt-3 mb-3">
+          <Button size="small" severity="danger" label="Stop"></Button>
+        </div>
+      </template>
+    </Card>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import Card from 'primevue/card';
+import Button from 'primevue/button';
+import ProgressBar from 'primevue/progressbar';
 
 export default {
   data() {
     return {
       signalingClient: null,
       peerConnection: null,
+      powerState: 'OFF',
+      powerBtnSeverity: 'danger',
+      status: 'Connecting...',
+      messages: null,
+      socket: null,
     };
   },
+  components: {
+    Button,
+    Card,
+    ProgressBar,
+  },
   methods: {
+    powerButton() {
+
+      if (this.powerState == 'ON') {
+
+        const req_body = {
+          "state": {
+            "desired": {
+              "device-state": "OFF",
+            }
+          }
+        }
+
+        axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+          this.powerState = 'OFF';
+          this.powerBtnSeverity = 'danger'
+          console.log(response)
+        })
+
+      }
+      else {
+
+        const req_body = {
+          "state": {
+            "desired": {
+              "device-state": "ON",
+            }
+          }
+        }
+
+        axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+          this.powerState = 'ON';
+          this.powerBtnSeverity = 'success'
+          console.log(response)
+        })
+      }
+    },
+    setupWebSocket() {
+      this.socket = new WebSocket('ws://localhost:3000');
+
+      this.socket.onopen = () => {
+        this.status = 'Connected!';
+      };
+
+      this.socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        this.messages = message.data.state;
+        console.log(this.messages)
+      };
+
+      this.socket.onclose = () => {
+        this.status = 'Disconnected!';
+      };
+
+      this.socket.onerror = (error) => {
+        console.error('WebSocket Error:', error);
+      };
+    },
     async setupViewer() {
       try {
         // DEV MODE
@@ -28,7 +132,6 @@ export default {
 
         // PROD MODE
         const viewer_url = import.meta.env.VITE_SERVER_URL + '/viewer'
-        console.log(viewer_url)
 
         const response = await axios.get(viewer_url, {
           params: {
@@ -47,8 +150,6 @@ export default {
           secretAccessKey,
           systemClockOffset,
         } = response.data;
-
-        console.log(response.data)
 
         this.signalingClient = new window.KVSWebRTC.SignalingClient({
           channelARN,
@@ -97,14 +198,23 @@ export default {
   },
   mounted() {
     this.setupViewer();
+    this.setupWebSocket();
+  },
+  beforeDestroy() {
+    if (this.socket) {
+      this.socket.close();
+    }
   },
 };
 </script>
 
 <style scoped>
+.main-vid {
+  background-color: transparent;
+  width: fit-content;
+}
+
 .video-player {
-  background-color: black;
-  max-width: 1000px;
   border-radius: 1rem;
   width: 100%;
   box-shadow: 0 2px 50px 0 rgba(0, 0, 0, 0.15);
