@@ -15,7 +15,6 @@
     "aws-sdk": "^2.1627.0",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
-    "buffer": "npm:Buffer@^0.0.0",
     "primeicons": "^7.0.0",
     "primevue": "^4.0.0-beta.3",
     "vue": "^3.4.21"
