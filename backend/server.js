@@ -20,7 +20,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const http_server = http.createServer(app);
 
 // // Create web sockets
-const wss = new WebSocket.Server({ http_server });
+const wss = new WebSocket.Server({ port: 3000 });
 
 // Broadcast function to send data to socket clients
 function broadcast(data) {
