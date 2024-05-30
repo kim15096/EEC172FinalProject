@@ -73,7 +73,7 @@ aws_device.on('status', function (thingName, stat, clientToken, stateObject) {
     if (clientToken === clientTokenGet) {
         stateObjectStore = stateObject;
     } else if (clientToken === clientTokenUpdate) {
-        // broadcast({ type: 'update', data: stateObject });
+        broadcast({ type: 'update', data: stateObject });
     }
 });
 
@@ -83,7 +83,7 @@ aws_device.on('message', function (topic, payload) {
     if (topic === '$aws/things/andrew_cc3200/shadow/update/accepted') {
         const update = JSON.parse(payload.toString());
         console.log(update);
-        // broadcast({ type: 'update', data: update });
+        broadcast({ type: 'update', data: update });
     }
 });
 

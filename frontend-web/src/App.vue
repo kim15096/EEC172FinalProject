@@ -26,7 +26,7 @@ export default {
         const home_cc_input = response.data.state.desired.home_cc_input
         const home_cc_state = response.data.state.desired.home_cc_state
 
-        if (home_cc_state == "MANUAL") {
+        if (home_cc_state == "MANUAL" || home_cc_state == "AUTO") {
           this.isLazerOn = true;
         }
         else {
