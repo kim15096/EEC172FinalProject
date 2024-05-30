@@ -20,7 +20,8 @@ export default {
   },
   methods: {
     getCurrentState() {
-      axios.get("http://localhost:3000/getShadowState").then((response) => {
+      const url = import.meta.env.VITE_SERVER_URL + "/getShadowState"
+      axios.get(url).then((response) => {
         const home_pi_cam_state = response.data.state.desired.home_pi_cam_state
         const home_cc_input = response.data.state.desired.home_cc_input
         const home_cc_state = response.data.state.desired.home_cc_state
@@ -41,7 +42,7 @@ export default {
       })
     },
     setupWebSockets() {
-      this.socket = new WebSocket('ws://localhost:3000');
+      this.socket = new WebSocket('ws://0.0.0.0:3000');
 
       this.socket.onopen = () => {
         console.log("APP SOCKET CONNECTED")

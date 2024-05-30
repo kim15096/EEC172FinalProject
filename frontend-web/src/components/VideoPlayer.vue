@@ -77,7 +77,8 @@ export default {
   },
   methods: {
     getCurrentState() {
-      axios.get("http://localhost:3000/getShadowState").then((response) => {
+      const url = import.meta.env.VITE_SERVER_URL + "/getShadowState"
+      axios.get(url).then((response) => {
         const home_pi_cam_state = response.data.state.desired.home_pi_cam_state
         const home_cc_input = response.data.state.desired.home_cc_input
         const home_cc_state = response.data.state.desired.home_cc_state
@@ -114,8 +115,8 @@ export default {
           }
         }
       }
-
-      axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+      const url = import.meta.env.VITE_SERVER_URL + "/updateShadowState"
+      axios.post(url, req_body).then((response) => {
         console.log(response.data.message)
         this.runningPreset = true
         this.runningPresetName = 'Circle'
@@ -131,7 +132,8 @@ export default {
         }
       }
 
-      axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+      const url = import.meta.env.VITE_SERVER_URL + "/updateShadowState"
+      axios.post(url, req_body).then((response) => {
         console.log(response.data.message)
         this.runningPreset = true
         this.runningPresetName = 'Zigzag'
@@ -147,7 +149,8 @@ export default {
         }
       }
 
-      axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+      const url = import.meta.env.VITE_SERVER_URL + "/updateShadowState"
+      axios.post(url, req_body).then((response) => {
         console.log(response.data.message)
         this.runningPreset = true
         this.runningPresetName = 'Fast'
@@ -163,7 +166,8 @@ export default {
         }
       }
 
-      axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+      const url = import.meta.env.VITE_SERVER_URL + "/updateShadowState"
+      axios.post(url, req_body).then((response) => {
         console.log(response.data.message)
         this.runningPreset = false
         this.runningPresetName = ''
@@ -181,7 +185,8 @@ export default {
           }
         }
 
-        axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+        const url = import.meta.env.VITE_SERVER_URL + "/updateShadowState"
+        axios.post(url, req_body).then((response) => {
           console.log(response.data.message)
           this.camPowerState = 'CAM OFF';
           this.powerBtnSeverity = 'danger'
@@ -198,7 +203,8 @@ export default {
           }
         }
 
-        axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+        const url = import.meta.env.VITE_SERVER_URL + "/updateShadowState"
+        axios.post(url, req_body).then((response) => {
           this.camPowerState = 'CAM ON';
           this.powerBtnSeverity = 'success'
           console.log(response.data.message)
@@ -206,7 +212,7 @@ export default {
       }
     },
     setupWebSocket() {
-      this.socket = new WebSocket('ws://localhost:3000');
+      this.socket = new WebSocket('ws://0.0.0.0:3000');
 
       this.socket.onopen = () => {
         console.log("VIDEOPLAYER SOCKET CONNECTED")

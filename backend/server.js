@@ -43,6 +43,7 @@ const iotData = new AWS.IotData({ endpoint: process.env.AWS_HOST_NAME });
 const kinesisVideoClient = new AWS.KinesisVideo({
     region: process.env.AWS_REGION,
     correctClockSkew: true,
+    reconnectPeriod: 10000
 });
 
 // SETUP CONNECTIONS
@@ -53,6 +54,7 @@ const aws_device = awsIot.device({
     secretKey: process.env.AWS_SECRET_KEY,
     accessKeyId: process.env.AWS_ACCESS_KEY,
     region: process.env.AWS_REGION,
+    reconnectPeriod: 10000,
 });
 
 let clientTokenGet;
@@ -116,7 +118,6 @@ app.get('/getShadowState', (req, res) => {
 // UPDATE SHADOW STATE
 app.post('/updateShadowState', (req, res) => {
     const state = req.body;
-
     aws_device.publish('$aws/things/andrew_cc3200/shadow/update', JSON.stringify(state), (err) => {
         if (err) {
             console.error('Error updating shadow state:', err);
@@ -199,5 +200,5 @@ app.get('/viewer', async (req, res) => {
 
 // START SERVER ON PORT 3000
 server.listen(port, '0.0.0.0', () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server is running on http://0.0.0.0:${port}`);
 });
