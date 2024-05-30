@@ -17,11 +17,9 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const http_server = http.createServer(app);
-
 // // Create web sockets
-const wss = new WebSocket.Server({ port: 3000 });
-
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 // Broadcast function to send data to socket clients
 function broadcast(data) {
     wss.clients.forEach(client => {
@@ -199,7 +197,7 @@ app.get('/viewer', async (req, res) => {
 });
 
 // START SERVER ON PORT 3000
-http_server.listen(port, '0.0.0.0', () => {
+server.listen(port, '0.0.0.0', () => {
     console.log(`HTTP Server is running on http://0.0.0.0:${port}`);
 });
 
