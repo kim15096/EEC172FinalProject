@@ -224,7 +224,7 @@ export default {
         if (home_pi_cam_state == 'ON') {
           this.camPowerState = 'CAM ON';
           this.powerBtnSeverity = 'success'
-        } else {
+        } else if (home_pi_cam_state == 'IDLE') {
           this.camPowerState = 'CAM OFF';
           this.powerBtnSeverity = 'danger'
         }
