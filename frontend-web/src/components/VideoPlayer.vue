@@ -5,34 +5,34 @@
       <div>
         <Button @click="powerButton()" icon="pi pi-power-off" :severity='powerBtnSeverity' rounded
           aria-label="Filter" />
-        <text class="ms-2 fw-bold" style="font-size: 16px;">{{ powerState }}</text>
+        <text class="ms-2 fw-bold" style="font-size: 16px;">{{ camPowerState }}</text>
       </div>
       <div class="mt-2">
         <text style="font-size: 14px; font-weight: 500;">{{ status }}</text>
       </div>
     </div>
 
-    <video class="video-player mt-3" ref="remoteView" autoplay playsinline controls></video>
+    <video class="video-player mt-3" ref="remoteView" autoplay muted playsinline controls></video>
 
     <!-- Selection -->
-    <Card class="mt-3">
+    <Card v-if="!runningPreset" class="mt-3">
       <template #content>
         <text style="font-size: 18px;" class="fw-bold">Select Mode</text>
         <div class="d-flex justify-content-center mt-3 mb-3">
-          <Button size="small" severity="info" label="1. Circle"></Button>
-          <Button size="small" severity="warn" class="ms-4 me-4" label="2. ZigZag"></Button>
-          <Button size="small" severity="help" label="3. Fast"></Button>
+          <Button @click="presetCircleBtn()" size="small" severity="info" label="1. Circle"></Button>
+          <Button @click="presetZigZagBtn()" size="small" severity="warn" class="ms-4 me-4" label="2. ZigZag"></Button>
+          <Button @click="presetFastBtn()" size="small" severity="help" label="3. Fast"></Button>
         </div>
         <small style="color: gray;">*To control manually, use the remote controller</small>
       </template>
     </Card>
     <!-- Preset running -->
-    <Card class="mt-3">
+    <Card v-if="this.runningPreset" class="mt-3">
       <template #content>
-        <text style="font-size: 18px;" class="fw-bold">Running: Circle</text>
+        <text style="font-size: 18px;" class="fw-bold">Running: {{ runningPresetName }}</text>
         <ProgressBar class="mt-3 ms-4 me-4" mode="indeterminate" style="height: 6px"></ProgressBar>
         <div class="d-flex justify-content-center mt-3 mb-3">
-          <Button size="small" severity="danger" label="Stop"></Button>
+          <Button @click="stopRunningPreset()" size="small" severity="danger" label="Stop"></Button>
         </div>
       </template>
     </Card>
@@ -44,41 +44,110 @@ import axios from 'axios';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 import ProgressBar from 'primevue/progressbar';
+import { VideoPlayer } from '@videojs-player/vue'
+import 'video.js/dist/video-js.css'
 
 export default {
   data() {
     return {
       signalingClient: null,
       peerConnection: null,
-      powerState: 'OFF',
+      camPowerState: 'CAM OFF',
       powerBtnSeverity: 'danger',
       status: 'Connecting...',
       messages: null,
       socket: null,
+      runningPreset: false,
+      runningPresetName: '',
     };
   },
   components: {
     Button,
     Card,
     ProgressBar,
+    VideoPlayer,
   },
   methods: {
+    presetCircleBtn() {
+      const req_body = {
+        "state": {
+          "desired": {
+            "home_cc_state": "AUTO",
+            "home_cc_input": "CIRCLE",
+          }
+        }
+      }
+
+      axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+        console.log(response.data.message)
+        this.runningPreset = true
+        this.runningPresetName = 'Circle'
+      })
+    },
+    presetZigZagBtn() {
+      const req_body = {
+        "state": {
+          "desired": {
+            "home_cc_state": "AUTO",
+            "home_cc_input": "ZIGZAG",
+          }
+        }
+      }
+
+      axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+        console.log(response.data.message)
+        this.runningPreset = true
+        this.runningPresetName = 'ZigZag'
+      })
+    },
+    presetFastBtn() {
+      const req_body = {
+        "state": {
+          "desired": {
+            "home_cc_state": "AUTO",
+            "home_cc_input": "FAST",
+          }
+        }
+      }
+
+      axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+        console.log(response.data.message)
+        this.runningPreset = true
+        this.runningPresetName = 'Fast'
+      })
+    },
+    stopRunningPreset() {
+      const req_body = {
+        "state": {
+          "desired": {
+            "home_cc_state": "IDLE",
+            "home_cc_input": "NONE",
+          }
+        }
+      }
+
+      axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
+        console.log(response.data.message)
+        this.runningPreset = false
+        this.runningPresetName = ''
+      })
+    },
     powerButton() {
 
-      if (this.powerState == 'ON') {
+      if (this.camPowerState == 'CAM ON') {
 
         const req_body = {
           "state": {
             "desired": {
-              "device-state": "OFF",
+              "home_pi_cam_state": "IDLE",
             }
           }
         }
 
         axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
-          this.powerState = 'OFF';
+          console.log(response.data.message)
+          this.camPowerState = 'CAM OFF';
           this.powerBtnSeverity = 'danger'
-          console.log(response)
         })
 
       }
@@ -87,15 +156,15 @@ export default {
         const req_body = {
           "state": {
             "desired": {
-              "device-state": "ON",
+              "home_pi_cam_state": "ON",
             }
           }
         }
 
         axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
-          this.powerState = 'ON';
+          this.camPowerState = 'CAM ON';
           this.powerBtnSeverity = 'success'
-          console.log(response)
+          console.log(response.data.message)
         })
       }
     },
@@ -103,13 +172,18 @@ export default {
       this.socket = new WebSocket('ws://localhost:3000');
 
       this.socket.onopen = () => {
+        console.log("VIDEOPLAYER SOCKET CONNECTED")
         this.status = 'Connected!';
       };
 
       this.socket.onmessage = (event) => {
         const message = JSON.parse(event.data);
-        this.messages = message.data.state;
-        console.log(this.messages)
+        const device_state = message.data.state.desired.device_state;
+
+        if (device_state == 'ON') {
+          this.camPowerState = 'CAM ON';
+          this.powerBtnSeverity = 'success'
+        }
       };
 
       this.socket.onclose = () => {

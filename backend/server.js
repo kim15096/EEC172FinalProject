@@ -109,6 +109,20 @@ app.post('/updateShadowState', (req, res) => {
     });
 });
 
+// DELETE SHADOW STATE
+app.post('/deleteShadowState', (req, res) => {
+    const state = req.body;
+
+    aws_device.publish('$aws/things/andrew_cc3200/shadow/delete', JSON.stringify(state), (err) => {
+        if (err) {
+            console.error('Error deleting shadow state:', err);
+            res.status(500).json({ message: 'Error deleting shadow state', error: err });
+        } else {
+            res.json({ message: 'Delete Successful!' });
+        }
+    });
+});
+
 // Get streaming info
 app.get('/viewer', async (req, res) => {
     try {
