@@ -1,6 +1,7 @@
 <script>
 import VideoPlayer from './components/VideoPlayer.vue'
 import LazerBeam from './components/Lazer.vue';
+import axios from 'axios';
 
 export default {
   data() {
@@ -15,8 +16,30 @@ export default {
   },
   mounted() {
     this.setupWebSockets();
+    this.getCurrentState();
   },
   methods: {
+    getCurrentState() {
+      axios.get("http://localhost:3000/getShadowState").then((response) => {
+        const home_pi_cam_state = response.data.state.desired.home_pi_cam_state
+        const home_cc_input = response.data.state.desired.home_cc_input
+        const home_cc_state = response.data.state.desired.home_cc_state
+
+        if (home_cc_state == "MANUAL") {
+          this.isLazerOn = true;
+        }
+        else {
+          this.isLazerOn = false
+        }
+
+        if (home_cc_input == "CIRCLE" || home_cc_input == "ZIGZAG" || home_cc_input == "FAST") {
+          this.isLazerOn = true
+        }
+        else {
+          this.isLazerOn = false
+        }
+      })
+    },
     setupWebSockets() {
       this.socket = new WebSocket('ws://localhost:3000');
 
@@ -26,6 +49,7 @@ export default {
 
       this.socket.onmessage = (event) => {
         const message = JSON.parse(event.data);
+        console.log(message)
         const home_lazer_state = message.data.state.desired.home_cc_state
         if (home_lazer_state == "MANUAL" || home_lazer_state == "AUTO") {
           this.isLazerOn = true

@@ -16,6 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Create web sockets
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
@@ -28,13 +29,17 @@ function broadcast(data) {
     });
 }
 
-// SETUP AWS KINESIS FOR VIDEO STREAM
+// SETUP AWS Config for credentials
 AWS.config.update({
     region: process.env.AWS_REGION,
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECRET_KEY,
 });
 
+// SETUP IotData for GET requests
+const iotData = new AWS.IotData({ endpoint: process.env.AWS_HOST_NAME });
+
+// SETUP AWS KINESIS FOR VIDEO STREAM
 const kinesisVideoClient = new AWS.KinesisVideo({
     region: process.env.AWS_REGION,
     correctClockSkew: true,
@@ -76,9 +81,9 @@ aws_device.on('message', function (topic, payload) {
     console.log(`Received message on topic ${topic}: ${payload.toString()}`);
 
     if (topic === '$aws/things/andrew_cc3200/shadow/update/accepted') {
-        const delta = JSON.parse(payload.toString());
-        console.log(delta);
-        broadcast({ type: 'delta', data: delta });
+        const update = JSON.parse(payload.toString());
+        console.log(update);
+        broadcast({ type: 'update', data: update });
     }
 });
 
@@ -92,7 +97,20 @@ aws_device.on('timeout', function (thingName, clientToken) {
 
 // GET SHADOW STATE
 app.get('/getShadowState', (req, res) => {
-    aws_device.publish('$aws/things/andrew_cc3200/shadow/update', JSON.stringify(req));
+
+    const params = {
+        thingName: "andrew_cc3200"
+    }
+
+    iotData.getThingShadow(params, (err, data) => {
+        if (err) {
+            console.log(err, err.stack); // an error occurred
+            res.status(500).send({ error: 'Error retrieving shadow state' });
+        } else {
+            const payload = JSON.parse(data.payload);
+            res.send(payload);
+        }
+    });
 });
 
 // UPDATE SHADOW STATE

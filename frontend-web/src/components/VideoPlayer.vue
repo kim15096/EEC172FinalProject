@@ -20,7 +20,7 @@
         <text style="font-size: 18px;" class="fw-bold">Select Mode</text>
         <div class="d-flex justify-content-center mt-3 mb-3">
           <Button @click="presetCircleBtn()" size="small" severity="info" label="1. Circle"></Button>
-          <Button @click="presetZigZagBtn()" size="small" severity="warn" class="ms-4 me-4" label="2. ZigZag"></Button>
+          <Button @click="presetZigZagBtn()" size="small" severity="warn" class="ms-4 me-4" label="2. Zigzag"></Button>
           <Button @click="presetFastBtn()" size="small" severity="help" label="3. Fast"></Button>
         </div>
         <small style="color: gray;">*To control manually, use the remote controller</small>
@@ -30,6 +30,16 @@
     <Card v-if="this.runningPreset" class="mt-3">
       <template #content>
         <text style="font-size: 18px;" class="fw-bold">Running: {{ runningPresetName }}</text>
+        <ProgressBar class="mt-3 ms-4 me-4" mode="indeterminate" style="height: 6px"></ProgressBar>
+        <div class="d-flex justify-content-center mt-3 mb-3">
+          <Button @click="stopRunningPreset()" size="small" severity="danger" label="Stop"></Button>
+        </div>
+      </template>
+    </Card>
+    <!-- Manual mode -->
+    <Card v-if="this.runningManual" class="mt-3">
+      <template #content>
+        <text style="font-size: 18px;" class="fw-bold">Manual Lazer Mode</text>
         <ProgressBar class="mt-3 ms-4 me-4" mode="indeterminate" style="height: 6px"></ProgressBar>
         <div class="d-flex justify-content-center mt-3 mb-3">
           <Button @click="stopRunningPreset()" size="small" severity="danger" label="Stop"></Button>
@@ -56,6 +66,7 @@ export default {
       messages: null,
       socket: null,
       runningPreset: false,
+      runningManual: false,
       runningPresetName: '',
     };
   },
@@ -65,6 +76,35 @@ export default {
     ProgressBar,
   },
   methods: {
+    getCurrentState() {
+      axios.get("http://localhost:3000/getShadowState").then((response) => {
+        const home_pi_cam_state = response.data.state.desired.home_pi_cam_state
+        const home_cc_input = response.data.state.desired.home_cc_input
+        const home_cc_state = response.data.state.desired.home_cc_state
+
+        if (home_pi_cam_state == "IDLE") {
+          this.camPowerState = 'CAM OFF'
+          this.powerBtnSeverity = 'danger'
+        }
+        else {
+          this.camPowerState = 'CAM ON'
+          this.powerBtnSeverity = 'success'
+        }
+
+        if (home_cc_state == "MANUAL") {
+          this.runningManual = true;
+        }
+
+        if (home_cc_input == "CIRCLE" || home_cc_input == "ZIGZAG" || home_cc_input == "FAST") {
+          this.runningPreset = true
+          this.runningPresetName = home_cc_input[0] + home_cc_input.toLowerCase().slice(1)
+        }
+        else {
+          this.runningPreset = false
+          this.runningPresetName = ''
+        }
+      })
+    },
     presetCircleBtn() {
       const req_body = {
         "state": {
@@ -94,7 +134,7 @@ export default {
       axios.post("http://localhost:3000/updateShadowState", req_body).then((response) => {
         console.log(response.data.message)
         this.runningPreset = true
-        this.runningPresetName = 'ZigZag'
+        this.runningPresetName = 'Zigzag'
       })
     },
     presetFastBtn() {
@@ -175,12 +215,33 @@ export default {
 
       this.socket.onmessage = (event) => {
         const message = JSON.parse(event.data);
-        const device_state = message.data.state.desired.device_state;
+        console.log("SOCKET MESSAGE", message)
 
-        if (device_state == 'ON') {
+        const home_pi_cam_state = message.data.state.desired.home_pi_cam_state;
+        const home_cc_state = message.data.state.desired.home_cc_state;
+        const home_cc_input = message.data.state.desired.home_cc_input;
+
+        if (home_pi_cam_state == 'ON') {
           this.camPowerState = 'CAM ON';
           this.powerBtnSeverity = 'success'
+        } else {
+          this.camPowerState = 'CAM OFF';
+          this.powerBtnSeverity = 'danger'
         }
+
+        if (home_cc_state == "MANUAL") {
+          this.runningManual = true;
+        }
+
+        if (home_cc_input == "CIRCLE" || home_cc_input == "ZIGZAG" || home_cc_input == "FAST") {
+          this.runningPreset = true
+          this.runningPresetName = home_cc_input[0] + home_cc_input.toLowerCase().slice(1)
+        }
+        else {
+          this.runningPreset = false;
+          this.runningPresetName = ''
+        }
+
       };
 
       this.socket.onclose = () => {
@@ -268,6 +329,7 @@ export default {
     },
   },
   mounted() {
+    this.getCurrentState();
     this.setupViewer();
     this.setupWebSocket();
   },
@@ -289,5 +351,16 @@ export default {
   border-radius: 1rem;
   width: 100%;
   box-shadow: 0 2px 50px 0 rgba(0, 0, 0, 0.15);
+  transform: scale(-1, 1);
+  -webkit-transform: rotateY(180deg);
+  /* Safari and Chrome */
+  -moz-transform: rotateY(180deg);
+  /* Firefox */
+}
+
+video::-webkit-media-controls-panel {
+  transform: scale(-1, 1);
+  -webkit-transform: rotateY(180deg);
+  -moz-transform: rotateY(180deg);
 }
 </style>
