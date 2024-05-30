@@ -6,7 +6,7 @@ const AWS = require('aws-sdk');
 const { SignalingClient, Role } = require('amazon-kinesis-video-streams-webrtc');
 const path = require('path');
 const cors = require('cors');
-const http = require('http');
+const https = require('https');
 const WebSocket = require('ws');
 require('dotenv').config();
 
@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Create web sockets
-const server = http.createServer(app);
+const server = https.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // Broadcast function to send data to socket clients
