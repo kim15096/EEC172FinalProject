@@ -20,8 +20,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const http_server = http.createServer(app);
 
 // // Create web sockets
-const https_server = https.createServer(app);
-const wss = new WebSocket.Server({ https_server });
+const wss = new WebSocket.Server({ http_server });
 
 // Broadcast function to send data to socket clients
 function broadcast(data) {
