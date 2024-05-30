@@ -44,8 +44,6 @@ import axios from 'axios';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 import ProgressBar from 'primevue/progressbar';
-import { VideoPlayer } from '@videojs-player/vue'
-import 'video.js/dist/video-js.css'
 
 export default {
   data() {
@@ -65,7 +63,6 @@ export default {
     Button,
     Card,
     ProgressBar,
-    VideoPlayer,
   },
   methods: {
     presetCircleBtn() {
