@@ -6,8 +6,8 @@ const AWS = require('aws-sdk');
 const { SignalingClient, Role } = require('amazon-kinesis-video-streams-webrtc');
 const path = require('path');
 const cors = require('cors');
-const https = require('https');
-const WebSocket = require('ws');
+// const https = require('https');
+// const WebSocket = require('ws');
 require('dotenv').config();
 
 const port = 3000;
@@ -16,18 +16,18 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Create web sockets
-const server = https.createServer(app);
-const wss = new WebSocket.Server({ server });
+// // Create web sockets
+// const server = https.createServer(app);
+// const wss = new WebSocket.Server({ server });
 
-// Broadcast function to send data to socket clients
-function broadcast(data) {
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(data));
-        }
-    });
-}
+// // Broadcast function to send data to socket clients
+// function broadcast(data) {
+//     wss.clients.forEach(client => {
+//         if (client.readyState === WebSocket.OPEN) {
+//             client.send(JSON.stringify(data));
+//         }
+//     });
+// }
 
 // SETUP AWS Config for credentials
 AWS.config.update({
@@ -43,7 +43,6 @@ const iotData = new AWS.IotData({ endpoint: process.env.AWS_HOST_NAME });
 const kinesisVideoClient = new AWS.KinesisVideo({
     region: process.env.AWS_REGION,
     correctClockSkew: true,
-    reconnectPeriod: 10000
 });
 
 // SETUP CONNECTIONS
@@ -54,7 +53,6 @@ const aws_device = awsIot.device({
     secretKey: process.env.AWS_SECRET_KEY,
     accessKeyId: process.env.AWS_ACCESS_KEY,
     region: process.env.AWS_REGION,
-    reconnectPeriod: 10000,
 });
 
 let clientTokenGet;
@@ -75,7 +73,7 @@ aws_device.on('status', function (thingName, stat, clientToken, stateObject) {
     if (clientToken === clientTokenGet) {
         stateObjectStore = stateObject;
     } else if (clientToken === clientTokenUpdate) {
-        broadcast({ type: 'update', data: stateObject });
+        // broadcast({ type: 'update', data: stateObject });
     }
 });
 
@@ -85,7 +83,7 @@ aws_device.on('message', function (topic, payload) {
     if (topic === '$aws/things/andrew_cc3200/shadow/update/accepted') {
         const update = JSON.parse(payload.toString());
         console.log(update);
-        broadcast({ type: 'update', data: update });
+        // broadcast({ type: 'update', data: update });
     }
 });
 

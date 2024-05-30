@@ -42,7 +42,7 @@ export default {
       })
     },
     setupWebSockets() {
-      this.socket = new WebSocket('ws://0.0.0.0:3000');
+      this.socket = new WebSocket('wss://eec172finalproject-production.up.railway.app');
 
       this.socket.onopen = () => {
         console.log("APP SOCKET CONNECTED")
