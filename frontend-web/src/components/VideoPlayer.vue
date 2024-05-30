@@ -213,7 +213,7 @@ export default {
       }
     },
     setupWebSocket() {
-      this.socket = new WebSocket('wss://eec172finalproject-production.up.railway.app');
+      this.socket = new WebSocket(import.meta.env.VITE_SERVER_SOCKET);
 
       this.socket.onopen = () => {
         console.log("VIDEOPLAYER SOCKET CONNECTED")

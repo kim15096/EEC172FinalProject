@@ -20,17 +20,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 const http_server = http.createServer(app);
 
 // // Create web sockets
-const server = https.createServer(app);
-// const wss = new WebSocket.Server({ server });
+const https_server = https.createServer(app);
+const wss = new WebSocket.Server({ https_server });
 
-// // Broadcast function to send data to socket clients
-// function broadcast(data) {
-//     wss.clients.forEach(client => {
-//         if (client.readyState === WebSocket.OPEN) {
-//             client.send(JSON.stringify(data));
-//         }
-//     });
-// }
+// Broadcast function to send data to socket clients
+function broadcast(data) {
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+        }
+    });
+}
 
 // SETUP AWS Config for credentials
 AWS.config.update({
@@ -201,7 +201,7 @@ app.get('/viewer', async (req, res) => {
 
 // START SERVER ON PORT 3000
 http_server.listen(port, '0.0.0.0', () => {
-    console.log(`Server is running on http://0.0.0.0:${port}`);
+    console.log(`HTTP Server is running on http://0.0.0.0:${port}`);
 });
 
 // // START SERVER ON PORT 3000
