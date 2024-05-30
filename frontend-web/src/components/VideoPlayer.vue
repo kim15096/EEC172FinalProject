@@ -78,6 +78,7 @@ export default {
   methods: {
     getCurrentState() {
       const url = import.meta.env.VITE_SERVER_URL + "/getShadowState"
+      console.log(url)
       axios.get(url).then((response) => {
         const home_pi_cam_state = response.data.state.desired.home_pi_cam_state
         const home_cc_input = response.data.state.desired.home_cc_input

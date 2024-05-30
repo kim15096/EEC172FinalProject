@@ -6,8 +6,9 @@ const AWS = require('aws-sdk');
 const { SignalingClient, Role } = require('amazon-kinesis-video-streams-webrtc');
 const path = require('path');
 const cors = require('cors');
-// const https = require('https');
-// const WebSocket = require('ws');
+const https = require('https');
+const http = require('http');
+const WebSocket = require('ws');
 require('dotenv').config();
 
 const port = 3000;
@@ -16,8 +17,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+const http_server = http.createServer(app);
+
 // // Create web sockets
-// const server = https.createServer(app);
+const server = https.createServer(app);
 // const wss = new WebSocket.Server({ server });
 
 // // Broadcast function to send data to socket clients
@@ -197,6 +200,11 @@ app.get('/viewer', async (req, res) => {
 });
 
 // START SERVER ON PORT 3000
-server.listen(port, '0.0.0.0', () => {
+http_server.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on http://0.0.0.0:${port}`);
 });
+
+// // START SERVER ON PORT 3000
+// server.listen(port, '0.0.0.0', () => {
+//     console.log(`Server is running on http://0.0.0.0:${port}`);
+// });
