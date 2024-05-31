@@ -211,6 +211,7 @@ export default {
           this.camPowerState = 'CAM ON';
           this.powerBtnSeverity = 'success'
           console.log(response.data.message)
+          this.setupViewer()
         })
       }
     },
