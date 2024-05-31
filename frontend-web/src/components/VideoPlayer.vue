@@ -3,16 +3,16 @@
   <div class="d-flex flex-column main-vid align-items-left">
     <div class="d-flex justify-content-between justify-content-center align-items-center align-text-center">
       <div>
-        <Button @click="powerButton()" icon="pi pi-power-off" :severity='powerBtnSeverity' rounded
-          aria-label="Filter" />
-        <text class="ms-2 fw-bold" style="font-size: 16px;">{{ camPowerState }}</text>
+        <Button @click="powerButton()" icon="pi pi-power-off" :severity='powerBtnSeverity' rounded aria-label="Filter"
+          style="width: 35px; height: 35px;" />
+        <text class="ms-2 fw-bold" style="font-size: 14px;">{{ camPowerState }}</text>
       </div>
-      <div class="mt-2">
+      <div class="">
         <text style="font-size: 14px; font-weight: 500;">{{ status }}</text>
       </div>
     </div>
 
-    <video class="video-player mt-3" ref="remoteView" autoplay muted playsinline controls></video>
+    <video class="video-player mt-2" ref="remoteView" autoplay muted playsinline controls></video>
 
     <!-- Selection -->
     <Card v-if="!runningPreset" class="mt-3">

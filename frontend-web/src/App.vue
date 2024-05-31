@@ -85,6 +85,6 @@ export default {
 .video-player-main {
   width: 85vw;
   max-width: 800px;
-  transform: translateY(-50px);
+  transform: translateY(-20px);
 }
 </style>

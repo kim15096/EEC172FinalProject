@@ -53,6 +53,10 @@ const aws_device = awsIot.device({
     secretKey: process.env.AWS_SECRET_KEY,
     accessKeyId: process.env.AWS_ACCESS_KEY,
     region: process.env.AWS_REGION,
+    debug: false,
+    keepalive: 1200,
+    baseReconnectTimeMs: 1,
+    autoResubscribe: true,
 });
 
 let clientTokenGet;
@@ -67,18 +71,8 @@ aws_device.on('connect', function () {
     aws_device.subscribe('$aws/things/andrew_cc3200/shadow/update/delta');
 });
 
-aws_device.on('status', function (thingName, stat, clientToken, stateObject) {
-    console.log(`Received ${stat} on ${thingName}: ${JSON.stringify(stateObject, null, 2)}`);
-
-    if (clientToken === clientTokenGet) {
-        stateObjectStore = stateObject;
-    } else if (clientToken === clientTokenUpdate) {
-        broadcast({ type: 'update', data: stateObject });
-    }
-});
-
 aws_device.on('message', function (topic, payload) {
-    console.log(`Received message on topic ${topic}: ${payload.toString()}`);
+    console.log(`2. Received message on topic ${topic}: ${payload.toString()}`);
 
     if (topic === '$aws/things/andrew_cc3200/shadow/update/accepted') {
         const update = JSON.parse(payload.toString());
@@ -115,12 +109,14 @@ app.get('/getShadowState', (req, res) => {
 // UPDATE SHADOW STATE
 app.post('/updateShadowState', (req, res) => {
     const state = req.body;
-    res.json({ message: 'CONNECTING TO AWS' });
+    // res.json({ message: 'CONNECTING TO AWS' });
+    console.log("REACHED")
     aws_device.publish('$aws/things/andrew_cc3200/shadow/update', JSON.stringify(state), (err) => {
         if (err) {
             console.error('Error updating shadow state:', err);
             res.status(500).json({ message: 'Error updating shadow state', error: err });
         } else {
+            console.log("RES REACHED")
             res.json({ message: 'Update Successful!' });
         }
     });
