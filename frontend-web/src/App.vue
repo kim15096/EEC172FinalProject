@@ -33,7 +33,7 @@ export default {
           this.isLazerOn = false
         }
 
-        if (home_cc_input == "CIRCLE" || home_cc_input == "ZIGZAG" || home_cc_input == "FAST") {
+        if (home_cc_input == "BOX" || home_cc_input == "ZIGZAG" || home_cc_input == "LINE") {
           this.isLazerOn = true
         }
         else {
@@ -50,7 +50,6 @@ export default {
 
       this.socket.onmessage = (event) => {
         const message = JSON.parse(event.data);
-        console.log(message)
         const home_lazer_state = message.data.state.desired.home_cc_state
         if (home_lazer_state == "MANUAL" || home_lazer_state == "AUTO") {
           this.isLazerOn = true

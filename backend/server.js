@@ -101,7 +101,6 @@ app.get('/getShadowState', (req, res) => {
     const params = {
         thingName: "andrew_cc3200"
     }
-
     iotData.getThingShadow(params, (err, data) => {
         if (err) {
             console.log(err, err.stack); // an error occurred
@@ -116,6 +115,7 @@ app.get('/getShadowState', (req, res) => {
 // UPDATE SHADOW STATE
 app.post('/updateShadowState', (req, res) => {
     const state = req.body;
+    res.json({ message: 'CONNECTING TO AWS' });
     aws_device.publish('$aws/things/andrew_cc3200/shadow/update', JSON.stringify(state), (err) => {
         if (err) {
             console.error('Error updating shadow state:', err);

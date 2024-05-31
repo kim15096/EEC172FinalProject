@@ -19,9 +19,9 @@
       <template #content>
         <text style="font-size: 18px;" class="fw-bold">Select Mode</text>
         <div class="d-flex justify-content-center mt-3 mb-3">
-          <Button @click="presetCircleBtn()" size="small" severity="info" label="1. Circle"></Button>
+          <Button @click="presetBoxBtn()" size="small" severity="info" label="1. Box"></Button>
           <Button @click="presetZigZagBtn()" size="small" severity="warn" class="ms-4 me-4" label="2. Zigzag"></Button>
-          <Button @click="presetFastBtn()" size="small" severity="help" label="3. Fast"></Button>
+          <Button @click="presetLineBtn()" size="small" severity="help" label="3. Line"></Button>
         </div>
         <small style="color: gray;">*To control manually, use the remote controller</small>
       </template>
@@ -78,7 +78,6 @@ export default {
   methods: {
     getCurrentState() {
       const url = import.meta.env.VITE_SERVER_URL + "/getShadowState"
-      console.log(url)
       axios.get(url).then((response) => {
         const home_pi_cam_state = response.data.state.desired.home_pi_cam_state
         const home_cc_input = response.data.state.desired.home_cc_input
@@ -97,7 +96,7 @@ export default {
           this.runningManual = true;
         }
 
-        if (home_cc_input == "CIRCLE" || home_cc_input == "ZIGZAG" || home_cc_input == "FAST") {
+        if (home_cc_input == "BOX" || home_cc_input == "ZIGZAG" || home_cc_input == "LINE") {
           this.runningPreset = true
           this.runningPresetName = home_cc_input[0] + home_cc_input.toLowerCase().slice(1)
         }
@@ -107,12 +106,12 @@ export default {
         }
       })
     },
-    presetCircleBtn() {
+    presetBoxBtn() {
       const req_body = {
         "state": {
           "desired": {
             "home_cc_state": "AUTO",
-            "home_cc_input": "CIRCLE",
+            "home_cc_input": "BOX",
           }
         }
       }
@@ -120,7 +119,7 @@ export default {
       axios.post(url, req_body).then((response) => {
         console.log(response.data.message)
         this.runningPreset = true
-        this.runningPresetName = 'Circle'
+        this.runningPresetName = 'Box'
       })
     },
     presetZigZagBtn() {
@@ -140,12 +139,12 @@ export default {
         this.runningPresetName = 'Zigzag'
       })
     },
-    presetFastBtn() {
+    presetLineBtn() {
       const req_body = {
         "state": {
           "desired": {
             "home_cc_state": "AUTO",
-            "home_cc_input": "FAST",
+            "home_cc_input": "LINE",
           }
         }
       }
@@ -154,7 +153,7 @@ export default {
       axios.post(url, req_body).then((response) => {
         console.log(response.data.message)
         this.runningPreset = true
-        this.runningPresetName = 'Fast'
+        this.runningPresetName = 'Line'
       })
     },
     stopRunningPreset() {
@@ -240,7 +239,7 @@ export default {
           this.runningManual = true;
         }
 
-        if (home_cc_input == "CIRCLE" || home_cc_input == "ZIGZAG" || home_cc_input == "FAST") {
+        if (home_cc_input == "BOX" || home_cc_input == "ZIGZAG" || home_cc_input == "LINE") {
           this.runningPreset = true
           this.runningPresetName = home_cc_input[0] + home_cc_input.toLowerCase().slice(1)
         }
