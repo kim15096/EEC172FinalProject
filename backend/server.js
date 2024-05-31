@@ -109,7 +109,7 @@ app.get('/getShadowState', (req, res) => {
 // UPDATE SHADOW STATE
 app.post('/updateShadowState', (req, res) => {
     const state = req.body;
-    // res.json({ message: 'CONNECTING TO AWS' });
+    res.json({ message: 'CONNECTING TO AWS' });
     console.log("REACHED")
     aws_device.publish('$aws/things/andrew_cc3200/shadow/update', JSON.stringify(state), (err) => {
         if (err) {
