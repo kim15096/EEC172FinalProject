@@ -12,7 +12,10 @@
       </div>
     </div>
 
-    <video class="video-player mt-2" ref="remoteView" autoplay muted playsinline controls></video>
+    <video v-if="camPowerState == 'CAM ON'" class="video-player mt-2" ref="remoteView" autoplay muted playsinline
+      controls></video>
+
+    <video v-else class="video-player mt-2" autoplay muted playsinline controls></video>
 
     <!-- Selection -->
     <Card v-if="!runningPreset" class="mt-3">
