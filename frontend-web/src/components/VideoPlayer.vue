@@ -97,14 +97,17 @@ export default {
 
         if (home_cc_state == "MANUAL") {
           this.runningManual = true;
+          this.runningPreset = false;
         }
         else if (home_cc_state == "IDLE") {
           this.runningPreset = false
           this.runningPresetName = ''
+          this.runningManual = false
         }
 
         if (home_cc_input == "BOX" || home_cc_input == "ZIGZAG" || home_cc_input == "LINE") {
           this.runningPreset = true
+          this.runningManual = false
           this.runningPresetName = home_cc_input[0] + home_cc_input.toLowerCase().slice(1)
         }
       })
@@ -122,6 +125,7 @@ export default {
       axios.post(url, req_body).then((response) => {
         console.log(response.data.message)
         this.runningPreset = true
+        this.runningManual = false
         this.runningPresetName = 'Box'
       })
     },
@@ -139,6 +143,7 @@ export default {
       axios.post(url, req_body).then((response) => {
         console.log(response.data.message)
         this.runningPreset = true
+        this.runningManual = false
         this.runningPresetName = 'Zigzag'
       })
     },
@@ -156,6 +161,7 @@ export default {
       axios.post(url, req_body).then((response) => {
         console.log(response.data.message)
         this.runningPreset = true
+        this.runningManual = false
         this.runningPresetName = 'Line'
       })
     },
@@ -174,6 +180,7 @@ export default {
         console.log(response.data.message)
         this.runningPreset = false
         this.runningPresetName = ''
+        this.runningManual = false
       })
     },
     powerButton() {
@@ -245,15 +252,18 @@ export default {
 
         if (home_cc_state == "MANUAL") {
           this.runningManual = true;
+          this.runningPreset = false
+        }
+        else if (home_cc_state == "IDLE") {
+          this.runningManual = false
+          this.runningPreset = false
+          this.runningPresetName = ''
         }
 
         if (home_cc_input == "BOX" || home_cc_input == "ZIGZAG" || home_cc_input == "LINE") {
           this.runningPreset = true
+          this.runningManual = false
           this.runningPresetName = home_cc_input[0] + home_cc_input.toLowerCase().slice(1)
-        }
-        else {
-          this.runningPreset = false;
-          this.runningPresetName = ''
         }
 
       };
