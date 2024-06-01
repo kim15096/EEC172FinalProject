@@ -18,7 +18,7 @@
     <video v-else class="video-player mt-2" autoplay muted playsinline controls></video>
 
     <!-- Selection -->
-    <Card v-if="!runningPreset" class="mt-3">
+    <Card v-if="!runningPreset && !runningManual" class="mt-3">
       <template #content>
         <text style="font-size: 18px;" class="fw-bold">Select Mode</text>
         <div class="d-flex justify-content-center mt-3 mb-3">
@@ -35,7 +35,7 @@
         <text style="font-size: 18px;" class="fw-bold">Running: {{ runningPresetName }}</text>
         <ProgressBar class="mt-3 ms-4 me-4" mode="indeterminate" style="height: 6px"></ProgressBar>
         <div class="d-flex justify-content-center mt-3 mb-3">
-          <Button @click="stopRunningPreset()" size="small" severity="danger" label="Stop"></Button>
+          <Button @click="stopRunning()" size="small" severity="danger" label="Stop"></Button>
         </div>
       </template>
     </Card>
@@ -45,7 +45,7 @@
         <text style="font-size: 18px;" class="fw-bold">Manual Lazer Mode</text>
         <ProgressBar class="mt-3 ms-4 me-4" mode="indeterminate" style="height: 6px"></ProgressBar>
         <div class="d-flex justify-content-center mt-3 mb-3">
-          <Button @click="stopRunningPreset()" size="small" severity="danger" label="Stop"></Button>
+          <Button @click="stopRunning()" size="small" severity="danger" label="Stop"></Button>
         </div>
       </template>
     </Card>
@@ -165,7 +165,7 @@ export default {
         this.runningPresetName = 'Line'
       })
     },
-    stopRunningPreset() {
+    stopRunning() {
       const req_body = {
         "state": {
           "desired": {
