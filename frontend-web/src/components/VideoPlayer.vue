@@ -98,14 +98,14 @@ export default {
         if (home_cc_state == "MANUAL") {
           this.runningManual = true;
         }
+        else if (home_cc_state == "IDLE") {
+          this.runningPreset = false
+          this.runningPresetName = ''
+        }
 
         if (home_cc_input == "BOX" || home_cc_input == "ZIGZAG" || home_cc_input == "LINE") {
           this.runningPreset = true
           this.runningPresetName = home_cc_input[0] + home_cc_input.toLowerCase().slice(1)
-        }
-        else {
-          this.runningPreset = false
-          this.runningPresetName = ''
         }
       })
     },
@@ -211,7 +211,11 @@ export default {
           this.camPowerState = 'CAM ON';
           this.powerBtnSeverity = 'success'
           console.log(response.data.message)
-          this.setupViewer()
+
+          setTimeout(function () {
+            this.setupViewer()
+          }, 5000);
+
         })
       }
     },
