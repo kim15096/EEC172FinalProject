@@ -221,7 +221,8 @@ export default {
 
           setTimeout(function () {
             this.setupViewer()
-          }, 5000);
+            console.log("SETTING UP VIEWER")
+          }, 10000);
 
         })
       }
