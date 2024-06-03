@@ -219,10 +219,10 @@ export default {
           this.powerBtnSeverity = 'success'
           console.log(response.data.message)
 
-          setTimeout(function () {
+          setTimeout(() => {
             this.setupViewer()
             console.log("SETTING UP VIEWER")
-          }, 10000);
+          }, 5000);
 
         })
       }
