@@ -378,9 +378,7 @@ export default {
   box-shadow: 0 2px 50px 0 rgba(0, 0, 0, 0.15);
   transform: scale(-1, 1);
   -webkit-transform: rotateY(180deg);
-  /* Safari and Chrome */
   -moz-transform: rotateY(180deg);
-  /* Firefox */
 }
 
 video::-webkit-media-controls-panel {

@@ -1,3 +1,5 @@
+// ANDREW KIM & ROCCO SCINTO
+
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'

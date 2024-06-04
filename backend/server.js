@@ -1,3 +1,5 @@
+// ANDREW KIM & ROCCO SCINTO
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const awsIot = require('aws-iot-device-sdk');
@@ -20,6 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // // Create web sockets
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
 // Broadcast function to send data to socket clients
 function broadcast(data) {
     wss.clients.forEach(client => {
@@ -97,7 +100,7 @@ app.get('/getShadowState', (req, res) => {
     }
     iotData.getThingShadow(params, (err, data) => {
         if (err) {
-            console.log(err, err.stack); // an error occurred
+            console.log(err, err.stack);
             res.status(500).send({ error: 'Error retrieving shadow state' });
         } else {
             const payload = JSON.parse(data.payload);
@@ -196,8 +199,3 @@ app.get('/viewer', async (req, res) => {
 server.listen(port, '0.0.0.0', () => {
     console.log(`HTTP Server is running on http://0.0.0.0:${port}`);
 });
-
-// // START SERVER ON PORT 3000
-// server.listen(port, '0.0.0.0', () => {
-//     console.log(`Server is running on http://0.0.0.0:${port}`);
-// });
