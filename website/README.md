@@ -1,7 +1,29 @@
-# Vue 3 + Vite
+# Setting up Website
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+LazerCat frontend website to view live stream and select lazer modes.
 
-## Recommended IDE Setup
+## Getting Started
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+### Installing
+
+```
+npm install
+```
+
+### ENV variables
+```
+VITE_AWS_ACCESS_KEY=""
+VITE_AWS_SECRET_KEY="+"
+VITE_AWS_HOST_NAME=""
+VITE_AWS_REGION=""
+VITE_AWS_SIGNAL_ARN=""
+VITE_SERVER_URL=""
+VITE_SERVER_SOCKET=""
+```
+
+### Executing program
+This serves the website at http://localhost:5173
+
+```
+npm run dev
+```
