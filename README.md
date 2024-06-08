@@ -1,52 +1,10 @@
-# Project Title
+# LazerCat
 
-Simple overview of use/purpose.
+By: Andrew Kim & Rocco Scinto
 
 ## Description
 
-An in-depth paragraph about your project and overview of use.
-
-## Getting Started
-
-### Dependencies
-
-* Describe any prerequisites, libraries, OS version, etc., needed before installing program.
-* ex. Windows 10
-
-### Installing
-
-* How/where to download your program
-* Any modifications needed to be made to files/folders
-
-### Executing program
-
-* How to run the program
-* Step-by-step bullets
-```
-code blocks for commands
-```
-
-## Help
-
-Any advise for common problems or issues.
-```
-command to run if program contains helper info
-```
-
-## Authors
-
-Contributors names and contact info
-
-ex. Dominique Pizzie  
-ex. [@DomPizzie](https://twitter.com/dompizzie)
-
-## Version History
-
-* 0.2
-    * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
-* 0.1
-    * Initial Release
+LazerCat is an innovative toy designed for cat owners, enabling them to interact with their pets remotely through a controlled laser pointer and live video feed. Utilizing AWS WebRTC and IoT for seamless cloud integration, the system consists of three main components: a home-based CC3200 module, an away CC3200 module, and a Raspberry Pi. The home module manages local motion detection and AWS-triggered laser control, while the away module allows users to send commands via an IR remote, displaying these commands on an OLED screen and forwarding them to AWS. The Raspberry Pi handles video streaming, activating upon motion detection or user request to provide live footage of the cat activities. Implementation goals range from basic laser activation and motion sensor functionality to advanced features like pre-programmed laser routines, sound playback, and real-time video streaming. The project aims to keep cats entertained and active, providing peace of mind to owners.
 
 ## License
 
