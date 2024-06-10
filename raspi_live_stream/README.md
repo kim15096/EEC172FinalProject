@@ -16,5 +16,3 @@ Add the following line:
 ```
 @reboot sleep 20; [path to your launcher script]
 ```
-
-## Acknowledgments
